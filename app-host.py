@@ -5,10 +5,6 @@ from pathlib import Path
 import streamlit as st
 from openai import OpenAI
 from pydub import AudioSegment
-from fpdf2 import FPDF
-import base64
-from datetime import datetime
-import urllib.parse
 
 # Check for OpenAI API key in Streamlit secrets
 if 'OPENAI_API_KEY' not in st.secrets:
@@ -196,90 +192,12 @@ def process_audio_file(audio_file):
     
     return combined_text, summary
 
-def create_pdf(file_name, summary):
-    """Create a PDF file with the summary."""
-    pdf = FPDF()
-    pdf.add_page()
-    
-    # Set up the title
-    pdf.set_font("Arial", "B", 16)
-    pdf.cell(0, 10, "Audio Summary", ln=True, align='C')
-    pdf.cell(0, 10, f"File: {file_name}", ln=True, align='C')
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    
-    # Add timestamp
-    pdf.set_font("Arial", "I", 10)
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    pdf.cell(0, 10, f"Generated on: {timestamp}", ln=True, align='R')
-    
-    # Add the summary content
-    pdf.set_font("Arial", size=12)
-    pdf.ln(10)
-    
-    # Split the summary into lines and add them to the PDF
-    lines = summary.split('\n')
-    for line in lines:
-        # Remove bullet points and adjust spacing
-        line = line.strip()
-        if line:
-            if line.startswith('•'):
-                pdf.cell(10)  # Indent bullet points
-                line = line[1:].strip()
-            pdf.multi_cell(0, 10, line)
-    
-    # Return the PDF as bytes
-    return pdf.output(dest='S').encode('latin1')
-
-def get_download_link(data, filename, text):
-    """Generate a download link for a file."""
-    b64 = base64.b64encode(data.encode()).decode() if isinstance(data, str) else base64.b64encode(data).decode()
-    href = f'<a href="data:file/txt;base64,{b64}" download="{filename}">{text}</a>'
-    return href
-
-def get_whatsapp_share_link(summary):
-    """Generate a WhatsApp share link with the summary."""
-    # Truncate summary if too long for URL
-    max_length = 4000  # WhatsApp has a limit on URL length
-    truncated_summary = summary[:max_length] if len(summary) > max_length else summary
-    
-    # Create WhatsApp share link
-    whatsapp_text = urllib.parse.quote(truncated_summary)
-    return f"https://wa.me/?text={whatsapp_text}"
-
 def display_results(file_name, transcript, summary):
-    """Display results for the processed file with download and share options."""
+    """Display results for the processed file."""
     with st.expander(f"Results for: {file_name}", expanded=True):
         # Summary section
         st.subheader("Summary")
         st.write(summary)
-        
-        # Download and Share options
-        st.subheader("Download & Share Options")
-        col1, col2, col3 = st.columns(3)
-        
-        # PDF Download
-        with col1:
-            pdf_bytes = create_pdf(file_name, summary)
-            st.download_button(
-                label="📄 Download PDF",
-                data=pdf_bytes,
-                file_name=f"{file_name}_summary.pdf",
-                mime="application/pdf"
-            )
-        
-        # Text Download
-        with col2:
-            st.download_button(
-                label="📝 Download Text",
-                data=summary,
-                file_name=f"{file_name}_summary.txt",
-                mime="text/plain"
-            )
-        
-        # WhatsApp Share
-        with col3:
-            whatsapp_link = get_whatsapp_share_link(summary)
-            st.markdown(f'<a href="{whatsapp_link}" target="_blank"><button style="background-color:#25D366;color:white;padding:8px 15px;border:none;border-radius:5px;cursor:pointer;">📱 Share via WhatsApp</button></a>', unsafe_allow_html=True)
         
         # Transcript section
         st.subheader("Full Transcript")
