@@ -1,0 +1,5 @@
+streamlit>=1.32.0
+openai>=1.12.0
+pydub>=0.25.1
+python-dotenv>=1.0.0  # for local development with app.py
+ffmpeg-python>=0.2.0  # for audio processing
