@@ -5,7 +5,7 @@ from pathlib import Path
 import streamlit as st
 from openai import OpenAI
 from pydub import AudioSegment
-from fpdf import FPDF
+from fpdf2 import FPDF
 import base64
 from datetime import datetime
 import urllib.parse
