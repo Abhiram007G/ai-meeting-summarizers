@@ -98,7 +98,7 @@ def summarize_transcript(transcript):
     try:
         with st.spinner("Generating summary using GPT-4..."):
             response = client.chat.completions.create(
-                model="gpt-4-turbo-preview",
+                model="gpt-4o-mini",
                 messages=[
                     {
                         "role": "user",
